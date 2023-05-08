@@ -1,0 +1,25 @@
+---
+
+- name: Generate Ansible remediation playbook
+  command: "{{ ansible_fix_command }}"
+  args:
+    creates: "{{ playbook_file.remote }}"  
+  register: command_result
+  failed_when: "'Error' in command_result.stderr"
+
+- name: Download Ansible remediation playbook
+  fetch:
+    src: "{{ playbook_file.remote }}"
+    dest: "{{ playbook_file.local }}"
+    flat: yes
+
+- name: Run Ansible remediation playbook locally
+  local_action:
+    module: "command ansible-playbook --become --become-method sudo {{ playbook_file.local }}"
+  become: no
+  register: playbook_run
+
+- name: write the results to a log file
+  local_action:
+    module: "copy content={{ playbook_run.stdout }} dest={{ playbook_file.log }}"
+  become: no

@@ -33,3 +33,6 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+*.log
+terraform/packer_files/ansible/generated

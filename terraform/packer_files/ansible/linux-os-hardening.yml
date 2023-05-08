@@ -1,0 +1,35 @@
+---
+
+- name: Install OpenSCAP
+  hosts: localhost, all
+  become: true
+  gather_facts: true
+  tasks:
+    # Workaround: usrmerge package has issues on Debian distro.
+    # https://askubuntu.com/questions/1406991/ubuntu-22-04-usrmerge-fatal-error
+    - name: 'Debian: Remove usrmerge package'
+      ansible.builtin.apt:
+        name: usrmerge
+        state: absent
+        purge: true
+      when: ansible_distribution == 'Debian'
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+      when: ansible_os_family == 'Debian'
+    - name: Install OpenSCAP
+      ansible.builtin.include_role:
+        name: ./roles/openscap-install
+
+- name: Run OS hardening on all hosts
+  hosts: all
+  become: true
+  gather_facts: true
+  vars_files:
+    - group_vars/os-hardening-linux.yml
+  roles:
+    - { role: openscap-install }
+    - { role: openscap-scan, report_name: "pre-remediation" }
+    - { role: openscap-fix-ansible, report_name: "pre-remediation" }
+    - { role: openscap-scan, report_name: "post-remediation" }

@@ -1,0 +1,12 @@
+- name: Run OpenSCAP scan
+  ansible.builtin.command: "{{ scan_command }}"
+  args:
+    creates: "{{ report.report_remote_path }}"
+  register: command_result
+  failed_when: "'Error' in command_result.stderr"
+
+- name: Download HTML report
+  ansible.builtin.fetch:
+    src: "{{ report.report_remote_path }}"
+    dest: "{{ report.report_local_path  }}"
+    flat: yes

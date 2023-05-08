@@ -1,0 +1,14 @@
+---
+
+playbook_file:
+  remote: "/tmp/{{ inventory_hostname }}_ansible.yml"
+  local: "generated/{{ inventory_hostname }}_ansible.yml"
+  log: "generated/{{ inventory_hostname }}_ansible.log"
+
+ansible_fix_command: >
+  oscap xccdf generate fix
+    --profile {{ oscap.profile }}
+    --fix-type ansible 
+    --result-id ""
+    --output {{ playbook_file.remote }}
+    {{ report.results }}
